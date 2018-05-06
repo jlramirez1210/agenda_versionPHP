@@ -18,7 +18,7 @@ class EventsManager {
           type: 'GET',
           success: (data) =>{
             if (data.msg=="OK") {
-              this.poblarCalendario(data.eventos)
+              this.poblarCalendario(data)
             }else {
               alert(data.msg)
               window.location.href = 'index.html';
@@ -32,42 +32,67 @@ class EventsManager {
     }
 
     poblarCalendario(eventos) {
-        $('.calendario').fullCalendar({
-            header: {
-        		left: 'prev,next today',
-        		center: 'title',
-        		right: 'month,agendaWeek,basicDay'
-        	},
-        	defaultDate: '2016-11-01',
-        	navLinks: true,
-        	editable: true,
-        	eventLimit: true,
-          droppable: true,
-          dragRevertDuration: 0,
-          timeFormat: 'H:mm',
-          eventDrop: (event) => {
-              this.actualizarEvento(event)
-          },
-          events: eventos,
-          eventDragStart: (event,jsEvent) => {
-            $('.delete-btn').find('img').attr('src', "img/trash-open.png");
-            $('.delete-btn').css('background-color', '#a70f19')
-          },
-          eventDragStop: (event,jsEvent) =>{
-            var trashEl = $('.delete-btn');
-            var ofs = trashEl.offset();
-            var x1 = ofs.left;
-            var x2 = ofs.left + trashEl.outerWidth(true);
-            var y1 = ofs.top;
-            var y2 = ofs.top + trashEl.outerHeight(true);
-            if (jsEvent.pageX >= x1 && jsEvent.pageX<= x2 &&
-                jsEvent.pageY >= y1 && jsEvent.pageY <= y2) {
-                  this.eliminarEvento(event, jsEvent)
-                  $('.calendario').fullCalendar('removeEvents', event.id);
-            }
-
+      var fecha = new Date();
+      if(parseInt(fecha.getMonth())+1 < 10){
+        var mes = "0" + (parseInt(fecha.getMonth())+1);
+      }
+      if(parseInt(fecha.getDate()) < 10){
+        var dia = "0" + fecha.getDate();
+      }
+      var hoy = fecha.getFullYear() + '-' + mes + '-' + dia;
+      var options = {
+        header: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'month,agendaWeek,basicDay'
+        },
+        defaultDate: hoy,
+        navLinks: true,
+        editable: true,
+        eventLimit: true,
+        droppable: true,
+        dragRevertDuration: 0,
+        timeFormat: 'H:mm',
+        eventDrop: (event) => {
+            this.actualizarEvento(event)
+        },
+        events: [],
+        eventDragStart: (event,jsEvent) => {
+          $('.delete-btn').find('img').attr('src', "img/trash-open.png");
+          $('.delete-btn').css('background-color', '#a70f19')
+        },
+        eventDragStop: (event,jsEvent) =>{
+          var trashEl = $('.delete-btn');
+          var ofs = trashEl.offset();
+          var x1 = ofs.left;
+          var x2 = ofs.left + trashEl.outerWidth(true);
+          var y1 = ofs.top;
+          var y2 = ofs.top + trashEl.outerHeight(true);
+          if (jsEvent.pageX >= x1 && jsEvent.pageX<= x2 &&
+              jsEvent.pageY >= y1 && jsEvent.pageY <= y2) {
+                this.eliminarEvento(event, jsEvent)
+                $('.calendario').fullCalendar('removeEvents', event.id);
           }
-        })
+        }
+      };
+      for(let i=0; i < eventos.count; i++){
+        var datos = [];
+        datos['id'] = eventos[i].eventos.id;
+        datos['title'] = eventos[i].eventos.titulo;
+        if(eventos[i].eventos.hora_inicio!=null){
+          datos['start'] = eventos[i].eventos.fecha_inicio + ' ' + eventos[i].eventos.hora_inicio.substring(0, 5);
+        }else{
+          datos['start'] = eventos[i].eventos.fecha_inicio;
+        }
+        datos['end'] = eventos[i].eventos.fecha_final;
+        if(eventos[i].eventos.completo=='0'){
+          datos['allDay'] = false;
+        }else{
+          datos['allDay'] = true;
+        }
+        options.events.push(datos);
+      }
+      $('.calendario').fullCalendar(options);
     }
 
     anadirEvento(){
@@ -109,10 +134,6 @@ class EventsManager {
                 end: $('#end_date').val()+" "+$('#end_hour').val()
               })
             }
-
-
-
-
           }else {
             alert(data.msg)
           }
