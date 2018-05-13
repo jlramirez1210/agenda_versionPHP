@@ -33,11 +33,13 @@ class EventsManager {
 
     poblarCalendario(eventos) {
       var fecha = new Date();
-      if(parseInt(fecha.getMonth())+1 < 10){
-        var mes = "0" + (parseInt(fecha.getMonth())+1);
+      var mes = parseInt(fecha.getMonth()) + 1;
+      var dia = parseInt(fecha.getDate());
+      if(mes < 10){
+        mes = "0" + (parseInt(fecha.getMonth())+1);
       }
-      if(parseInt(fecha.getDate()) < 10){
-        var dia = "0" + fecha.getDate();
+      if(dia < 10){
+        dia = "0" + parseInt(fecha.getDate());
       }
       var hoy = fecha.getFullYear() + '-' + mes + '-' + dia;
       var options = {
